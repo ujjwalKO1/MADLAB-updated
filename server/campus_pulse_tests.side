@@ -1,0 +1,197 @@
+{
+  "id": "c20dfb2f-2f8f-4d92-bf39-38374d754b2c",
+  "version": "2.0",
+  "name": "Campus Pulse UI Tests",
+  "url": "http://localhost:8080",
+  "tests": [
+    {
+      "id": "e4f8d227-6f91-49b2-be22-7935f8c6e001",
+      "name": "1. Student Flow (Browse & Register)",
+      "commands": [
+        {
+          "id": "cmd-1",
+          "comment": "Open application with accessibility semantics enabled",
+          "command": "open",
+          "target": "/?enable-semantics=true",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "cmd-2",
+          "comment": "Set mobile-friendly viewport size",
+          "command": "setWindowSize",
+          "target": "550x850",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "cmd-3",
+          "comment": "Wait for onboarding screen to load",
+          "command": "waitForElementPresent",
+          "target": "xpath=//*[contains(@aria-label, \"I'm a Student\")]",
+          "targets": [],
+          "value": "5000"
+        },
+        {
+          "id": "cmd-4",
+          "comment": "Select Student Identity",
+          "command": "click",
+          "target": "xpath=//*[contains(@aria-label, \"I'm a Student\")]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "cmd-5",
+          "comment": "Wait for event feed to load",
+          "command": "waitForElementPresent",
+          "target": "xpath=//*[contains(@aria-label, \"Campus Pulse\")]",
+          "targets": [],
+          "value": "5000"
+        },
+        {
+          "id": "cmd-6",
+          "comment": "Toggle event registration status",
+          "command": "click",
+          "target": "xpath=//*[contains(@aria-label, \"Register\") or contains(@aria-label, \"Registered\")]",
+          "targets": [],
+          "value": ""
+        }
+      ]
+    },
+    {
+      "id": "e4f8d227-6f91-49b2-be22-7935f8c6e002",
+      "name": "2. Admin Flow (Login & Publish Event)",
+      "commands": [
+        {
+          "id": "cmd-1",
+          "comment": "Open application with accessibility semantics enabled",
+          "command": "open",
+          "target": "/?enable-semantics=true",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "cmd-2",
+          "comment": "Set mobile-friendly viewport size",
+          "command": "setWindowSize",
+          "target": "550x850",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "cmd-3",
+          "comment": "Wait for onboarding screen to load",
+          "command": "waitForElementPresent",
+          "target": "xpath=//*[contains(@aria-label, \"I'm a Club Head\")]",
+          "targets": [],
+          "value": "5000"
+        },
+        {
+          "id": "cmd-4",
+          "comment": "Select Club Head Identity",
+          "command": "click",
+          "target": "xpath=//*[contains(@aria-label, \"I'm a Club Head\")]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "cmd-5",
+          "comment": "Wait for login fields to load",
+          "command": "waitForElementPresent",
+          "target": "xpath=//input",
+          "targets": [],
+          "value": "5000"
+        },
+        {
+          "id": "cmd-6",
+          "comment": "Enter admin email address",
+          "command": "type",
+          "target": "xpath=//input[1]",
+          "targets": [],
+          "value": "admin@college.edu"
+        },
+        {
+          "id": "cmd-7",
+          "comment": "Enter admin password",
+          "command": "type",
+          "target": "xpath=//input[2]",
+          "targets": [],
+          "value": "adminpassword123"
+        },
+        {
+          "id": "cmd-8",
+          "comment": "Submit login form",
+          "command": "click",
+          "target": "xpath=//*[contains(@aria-label, \"Login\")]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "cmd-9",
+          "comment": "Wait for event creation screen to load",
+          "command": "waitForElementPresent",
+          "target": "xpath=//*[contains(@aria-label, \"Create New Event\")]",
+          "targets": [],
+          "value": "5000"
+        },
+        {
+          "id": "cmd-10",
+          "comment": "Enter event name",
+          "command": "type",
+          "target": "xpath=//input[1]",
+          "targets": [],
+          "value": "Selenium UI Workshop"
+        },
+        {
+          "id": "cmd-11",
+          "comment": "Enter host club name",
+          "command": "type",
+          "target": "xpath=//input[2]",
+          "targets": [],
+          "value": "QA Guild"
+        },
+        {
+          "id": "cmd-12",
+          "comment": "Enter registration link",
+          "command": "type",
+          "target": "xpath=//input[3]",
+          "targets": [],
+          "value": "https://forms.google.com/selenium"
+        },
+        {
+          "id": "cmd-13",
+          "comment": "Submit and publish event to MongoDB",
+          "command": "click",
+          "target": "xpath=//*[contains(@aria-label, \"Submit Event\")]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "cmd-14",
+          "comment": "Wait for redirect to the feed",
+          "command": "waitForElementPresent",
+          "target": "xpath=//*[contains(@aria-label, \"Campus Pulse\")]",
+          "targets": [],
+          "value": "5000"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "s1",
+      "name": "Campus Pulse Suite",
+      "persistSession": false,
+      "parallel": false,
+      "timeout": 300,
+      "tests": [
+        "e4f8d227-6f91-49b2-be22-7935f8c6e001",
+        "e4f8d227-6f91-49b2-be22-7935f8c6e002"
+      ]
+    }
+  ],
+  "urls": [
+    "http://localhost:8080"
+  ],
+  "plugins": []
+}

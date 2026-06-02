@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../providers/event_provider.dart';
 import 'create_event_screen.dart';
 
 class ClubHeadLoginScreen extends StatefulWidget {
@@ -35,16 +36,33 @@ class _ClubHeadLoginScreenState extends State<ClubHeadLoginScreen>
     if (!_formKey.currentState!.validate()) return;
     
     setState(() => _loading = true);
-    await Future.delayed(const Duration(milliseconds: 1200));
+    
+    final success = await EventProvider().loginAdmin(
+      _emailCtrl.text.trim(),
+      _passCtrl.text,
+    );
+    
     if (!mounted) return;
     setState(() => _loading = false);
-    Navigator.of(context).pushReplacement(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => const CreateEventScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) => FadeTransition(opacity: animation, child: child),
-        transitionDuration: const Duration(milliseconds: 400),
-      ),
-    );
+
+    if (success) {
+      Navigator.of(context).pushReplacement(
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => const CreateEventScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) => FadeTransition(opacity: animation, child: child),
+          transitionDuration: const Duration(milliseconds: 400),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Invalid email or password. Please try again.'),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+    }
   }
 
   @override

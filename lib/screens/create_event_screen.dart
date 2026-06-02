@@ -38,7 +38,6 @@ class _CreateEventScreenState extends State<CreateEventScreen> with SingleTicker
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _submitting = true);
-    await Future.delayed(const Duration(milliseconds: 1000));
 
     final images = [
       'assets/images/event_hackathon.png', 
@@ -48,7 +47,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> with SingleTicker
     ];
     
     final event = EventModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id: '', // Server will assign the database ID
       name: _nameCtrl.text.trim(),
       clubName: _clubCtrl.text.trim(),
       applicationType: _appType,
@@ -56,29 +55,39 @@ class _CreateEventScreenState extends State<CreateEventScreen> with SingleTicker
       imagePath: images[DateTime.now().millisecond % images.length],
     );
 
-    if (!mounted) return;
+    final success = await EventProvider().addEvent(event);
     
-    // Add the event using the Singleton EventProvider
-    EventProvider().addEvent(event);
+    if (!mounted) return;
     setState(() => _submitting = false);
 
-    // Show success overlay
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => const _SuccessDialog(),
-    );
+    if (success) {
+      // Show success overlay
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => const _SuccessDialog(),
+      );
 
-    await Future.delayed(const Duration(milliseconds: 2000));
-    if (!mounted) return;
-    Navigator.of(context).pop(); // dismiss dialog
-    Navigator.of(context).pushReplacement(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => const EventFeedScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) => FadeTransition(opacity: animation, child: child),
-        transitionDuration: const Duration(milliseconds: 400),
-      ),
-    );
+      await Future.delayed(const Duration(milliseconds: 2000));
+      if (!mounted) return;
+      Navigator.of(context).pop(); // dismiss dialog
+      Navigator.of(context).pushReplacement(
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => const EventFeedScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) => FadeTransition(opacity: animation, child: child),
+          transitionDuration: const Duration(milliseconds: 400),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Failed to publish event. Please verify your session.'),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+    }
   }
 
   @override
