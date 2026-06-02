@@ -6,7 +6,14 @@ import '../providers/event_provider.dart';
 import 'onboarding_screen.dart';
 
 class EventFeedScreen extends StatefulWidget {
-  const EventFeedScreen({super.key});
+  final bool isDarkMode;
+  final ValueChanged<bool> onThemeChanged;
+
+  const EventFeedScreen({
+    super.key,
+    required this.isDarkMode,
+    required this.onThemeChanged,
+  });
   @override
   State<EventFeedScreen> createState() => _EventFeedScreenState();
 }
@@ -19,9 +26,8 @@ class _EventFeedScreenState extends State<EventFeedScreen> with SingleTickerProv
   int _navIndex = 0;
   late AnimationController _anim;
 
-  // Mock profile setting values
+  // Profile setting values
   bool _mockNotification = true;
-  bool _mockDarkMode = false;
 
   @override
   void initState() {
@@ -56,7 +62,7 @@ class _EventFeedScreenState extends State<EventFeedScreen> with SingleTickerProv
       listenable: _provider,
       builder: (context, _) {
         return Scaffold(
-          backgroundColor: AppColors.backgroundWhite,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: SafeArea(
             child: FadeTransition(
               opacity: CurvedAnimation(parent: _anim, curve: Curves.easeOut),
@@ -473,85 +479,31 @@ class _EventFeedScreenState extends State<EventFeedScreen> with SingleTickerProv
   }
 
   Widget _buildProfileTab() {
+    final cs = Theme.of(context).colorScheme;
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       child: Column(
         children: [
           const SizedBox(height: 12),
-          // User Card
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppColors.primaryTeal, AppColors.accentViolet],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: AppShadows.medium,
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Student Settings',
+              style: Theme.of(context).textTheme.headlineLarge,
             ),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 36,
-                  backgroundColor: Colors.white.withValues(alpha: 0.2),
-                  child: const Text(
-                    'AJ',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 18),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Alex Johnson',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'ID: 1BM25CS042 • 3rd Year',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.white.withValues(alpha: 0.8),
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'alex.johnson@college.edu',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.white.withValues(alpha: 0.7),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+          ),
+          const SizedBox(height: 6),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Manage your app preferences and support options.',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(color: AppColors.textTertiary),
             ),
           ),
           const SizedBox(height: 28),
-          // Stats Row
-          Row(
-            children: [
-              _buildStatCard('8', 'Registered', Icons.check_circle_outline_rounded),
-              const SizedBox(width: 12),
-              _buildStatCard('340', 'XP Points', Icons.bolt_rounded),
-              const SizedBox(width: 12),
-              _buildStatCard('2', 'Clubs Joined', Icons.groups_rounded),
-            ],
-          ),
-          const SizedBox(height: 28),
-          // Settings Section
           Align(
             alignment: Alignment.centerLeft,
             child: Text(
@@ -565,7 +517,7 @@ class _EventFeedScreenState extends State<EventFeedScreen> with SingleTickerProv
           const SizedBox(height: 12),
           Container(
             decoration: BoxDecoration(
-              color: AppColors.surfaceWhite,
+              color: cs.surface,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: AppColors.borderGray),
             ),
@@ -580,11 +532,11 @@ class _EventFeedScreenState extends State<EventFeedScreen> with SingleTickerProv
                 ),
                 Divider(height: 1, color: AppColors.borderGray.withValues(alpha: 0.5)),
                 _buildToggleSetting(
-                  'Dark Theme Mode (Mock)',
-                  'Toggle app visual system presentation style',
+                  'Dark Theme Mode',
+                  'Switch between light and dark appearance',
                   Icons.dark_mode_outlined,
-                  _mockDarkMode,
-                  (val) => setState(() => _mockDarkMode = val),
+                  widget.isDarkMode,
+                  widget.onThemeChanged,
                 ),
                 Divider(height: 1, color: AppColors.borderGray.withValues(alpha: 0.5)),
                 _buildLinkSetting(
@@ -596,57 +548,22 @@ class _EventFeedScreenState extends State<EventFeedScreen> with SingleTickerProv
             ),
           ),
           const SizedBox(height: 36),
-          // Logout Button
+          // Go Home Button
           SizedBox(
             width: double.infinity,
             height: 54,
             child: ElevatedButton.icon(
-              onPressed: _logout,
-              icon: const Icon(Icons.logout_rounded, size: 20, color: Colors.white),
-              label: const Text('Log Out of Account', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              onPressed: _goHome,
+              icon: const Icon(Icons.home_rounded, size: 20, color: Colors.white),
+              label: const Text('Go to Home', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.error,
+                backgroundColor: AppColors.primaryTeal,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               ),
             ),
           ),
           const SizedBox(height: 32),
         ],
-      ),
-    );
-  }
-
-  Widget _buildStatCard(String val, String label, IconData icon) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceWhite,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.borderGray),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, size: 20, color: AppColors.primaryTeal),
-            const SizedBox(height: 8),
-            Text(
-              val,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 10,
-                color: AppColors.textTertiary,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -673,10 +590,13 @@ class _EventFeedScreenState extends State<EventFeedScreen> with SingleTickerProv
     );
   }
 
-  void _logout() {
+  void _goHome() {
     Navigator.of(context).pushAndRemoveUntil(
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => const OnboardingScreen(),
+        pageBuilder: (context, animation, secondaryAnimation) => OnboardingScreen(
+          isDarkMode: widget.isDarkMode,
+          onThemeChanged: widget.onThemeChanged,
+        ),
         transitionsBuilder: (context, animation, secondaryAnimation, child) => FadeTransition(opacity: animation, child: child),
         transitionDuration: const Duration(milliseconds: 400),
       ),
@@ -897,20 +817,29 @@ class _EventCardState extends State<_EventCard> with SingleTickerProviderStateMi
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         elevation: 0,
                       ),
-                      child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                        Text(
-                          isRegistered 
-                              ? 'Registered (Open Form)' 
-                              : (isVolunteer ? 'Volunteer Now' : 'Register Now'), 
-                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white)
-                        ),
-                        const SizedBox(width: 6),
-                        Icon(
-                          isRegistered ? Icons.check_circle_outline_rounded : Icons.open_in_new_rounded, 
-                          size: 16, 
-                          color: Colors.white
-                        ),
-                      ]),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                          Text(
+                            isRegistered
+                                ? 'Registered (Open Form)'
+                                : (isVolunteer ? 'Volunteer Now' : 'Register Now'),
+                            maxLines: 1,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              height: 1.2,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Icon(
+                            isRegistered ? Icons.check_circle_outline_rounded : Icons.open_in_new_rounded,
+                            size: 16,
+                            color: Colors.white,
+                          ),
+                        ]),
+                      ),
                     ),
                   ),
                 ]),

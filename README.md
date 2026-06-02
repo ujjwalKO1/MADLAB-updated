@@ -1,4 +1,4 @@
-# campus_pulse
+# EvntNxt
 
 A new Flutter project.
 

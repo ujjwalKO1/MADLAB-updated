@@ -11,19 +11,35 @@ void main() {
     systemNavigationBarColor: AppColors.surfaceWhite,
     systemNavigationBarIconBrightness: Brightness.dark,
   ));
-  runApp(const CampusPulseApp());
+  runApp(const EvntNxtApp());
 }
 
-class CampusPulseApp extends StatelessWidget {
-  const CampusPulseApp({super.key});
+class EvntNxtApp extends StatefulWidget {
+  const EvntNxtApp({super.key});
+
+  @override
+  State<EvntNxtApp> createState() => _EvntNxtAppState();
+}
+
+class _EvntNxtAppState extends State<EvntNxtApp> {
+  bool _isDarkMode = false;
+
+  void _toggleTheme(bool value) {
+    setState(() => _isDarkMode = value);
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Campus Pulse',
+      title: 'EvntNxt',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const OnboardingScreen(),
+      darkTheme: AppTheme.darkTheme,
+      themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      home: OnboardingScreen(
+        isDarkMode: _isDarkMode,
+        onThemeChanged: _toggleTheme,
+      ),
     );
   }
 }

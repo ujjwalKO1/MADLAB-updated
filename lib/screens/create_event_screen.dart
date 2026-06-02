@@ -5,7 +5,14 @@ import '../providers/event_provider.dart';
 import 'event_feed_screen.dart';
 
 class CreateEventScreen extends StatefulWidget {
-  const CreateEventScreen({super.key});
+  final bool isDarkMode;
+  final ValueChanged<bool> onThemeChanged;
+
+  const CreateEventScreen({
+    super.key,
+    required this.isDarkMode,
+    required this.onThemeChanged,
+  });
   @override
   State<CreateEventScreen> createState() => _CreateEventScreenState();
 }
@@ -38,6 +45,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> with SingleTicker
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _submitting = true);
+    await Future.delayed(const Duration(milliseconds: 1000));
 
     final images = [
       'assets/images/event_hackathon.png', 
@@ -47,7 +55,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> with SingleTicker
     ];
     
     final event = EventModel(
-      id: '', // Server will assign the database ID
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
       name: _nameCtrl.text.trim(),
       clubName: _clubCtrl.text.trim(),
       applicationType: _appType,
@@ -55,39 +63,32 @@ class _CreateEventScreenState extends State<CreateEventScreen> with SingleTicker
       imagePath: images[DateTime.now().millisecond % images.length],
     );
 
-    final success = await EventProvider().addEvent(event);
-    
     if (!mounted) return;
+    
+    // Add the event using the Singleton EventProvider
+    EventProvider().addEvent(event);
     setState(() => _submitting = false);
 
-    if (success) {
-      // Show success overlay
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (ctx) => const _SuccessDialog(),
-      );
+    // Show success overlay
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const _SuccessDialog(),
+    );
 
-      await Future.delayed(const Duration(milliseconds: 2000));
-      if (!mounted) return;
-      Navigator.of(context).pop(); // dismiss dialog
-      Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => const EventFeedScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) => FadeTransition(opacity: animation, child: child),
-          transitionDuration: const Duration(milliseconds: 400),
+    await Future.delayed(const Duration(milliseconds: 2000));
+    if (!mounted) return;
+    Navigator.of(context).pop(); // dismiss dialog
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => EventFeedScreen(
+          isDarkMode: widget.isDarkMode,
+          onThemeChanged: widget.onThemeChanged,
         ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Failed to publish event. Please verify your session.'),
-          backgroundColor: Colors.redAccent,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-      );
-    }
+        transitionsBuilder: (context, animation, secondaryAnimation, child) => FadeTransition(opacity: animation, child: child),
+        transitionDuration: const Duration(milliseconds: 400),
+      ),
+    );
   }
 
   @override
@@ -182,13 +183,24 @@ class _CreateEventScreenState extends State<CreateEventScreen> with SingleTicker
                       validator: (value) {
                         if (value != null && value.trim().isNotEmpty) {
                           final uri = Uri.tryParse(value.trim());
-                          if (uri == null || !uri.hasAbsolutePath || !uri.scheme.startsWith('http')) {
-                            return 'Enter a valid URL (starting with http:// or https://)';
+                          final host = uri?.host.toLowerCase() ?? '';
+                          final isHttp = uri != null &&
+                              (uri.scheme == 'http' || uri.scheme == 'https');
+                          final isGoogleForm = host.contains('docs.google.com') ||
+                              host.contains('forms.gle') ||
+                              host.contains('forms.google.com');
+                          if (!isHttp || !isGoogleForm) {
+                            return 'Please enter a valid Google Form link';
                           }
                         }
                         return null;
                       },
-                      decoration: const InputDecoration(hintText: 'https://forms.google.com/...'),
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      maxLines: 1,
+                      decoration: const InputDecoration(
+                        hintText: 'https://docs.google.com/forms/...',
+                        errorMaxLines: 2,
+                      ),
                     ),
                   ],
                 ),

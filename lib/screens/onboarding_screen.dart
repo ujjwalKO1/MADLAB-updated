@@ -4,7 +4,14 @@ import 'club_head_login_screen.dart';
 import 'event_feed_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
-  const OnboardingScreen({super.key});
+  final bool isDarkMode;
+  final ValueChanged<bool> onThemeChanged;
+
+  const OnboardingScreen({
+    super.key,
+    required this.isDarkMode,
+    required this.onThemeChanged,
+  });
 
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
@@ -110,7 +117,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     colors: [AppColors.primaryTeal, AppColors.accentViolet],
                   ).createShader(bounds),
                   child: Text(
-                    'Campus Pulse',
+                    'EvntNxt',
                     style:
                         Theme.of(context).textTheme.displayLarge?.copyWith(
                               color: Colors.white,
@@ -142,7 +149,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       Navigator.of(context).pushReplacement(
                         PageRouteBuilder(
                           pageBuilder: (context, animation, secondaryAnimation) =>
-                              const EventFeedScreen(),
+                              EventFeedScreen(
+                                isDarkMode: widget.isDarkMode,
+                                onThemeChanged: widget.onThemeChanged,
+                              ),
                           transitionsBuilder: (context, animation, secondaryAnimation, child) {
                             return FadeTransition(
                               opacity: animation,
@@ -179,7 +189,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       Navigator.of(context).push(
                         PageRouteBuilder(
                           pageBuilder: (context, animation, secondaryAnimation) =>
-                              const ClubHeadLoginScreen(),
+                              ClubHeadLoginScreen(
+                                isDarkMode: widget.isDarkMode,
+                                onThemeChanged: widget.onThemeChanged,
+                              ),
                           transitionsBuilder: (context, animation, secondaryAnimation, child) {
                             return FadeTransition(
                               opacity: animation,
@@ -206,7 +219,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 Padding(
                   padding: const EdgeInsets.only(bottom: 24),
                   child: Text(
-                    'Campus Pulse v1.0',
+                    'EvntNxt v1.0',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: AppColors.textTertiary.withValues(alpha: 0.6),
                         ),

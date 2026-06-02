@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
-import '../providers/event_provider.dart';
 import 'create_event_screen.dart';
 
 class ClubHeadLoginScreen extends StatefulWidget {
-  const ClubHeadLoginScreen({super.key});
+  final bool isDarkMode;
+  final ValueChanged<bool> onThemeChanged;
+
+  const ClubHeadLoginScreen({
+    super.key,
+    required this.isDarkMode,
+    required this.onThemeChanged,
+  });
   @override
   State<ClubHeadLoginScreen> createState() => _ClubHeadLoginScreenState();
 }
@@ -36,33 +42,19 @@ class _ClubHeadLoginScreenState extends State<ClubHeadLoginScreen>
     if (!_formKey.currentState!.validate()) return;
     
     setState(() => _loading = true);
-    
-    final success = await EventProvider().loginAdmin(
-      _emailCtrl.text.trim(),
-      _passCtrl.text,
-    );
-    
+    await Future.delayed(const Duration(milliseconds: 1200));
     if (!mounted) return;
     setState(() => _loading = false);
-
-    if (success) {
-      Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => const CreateEventScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) => FadeTransition(opacity: animation, child: child),
-          transitionDuration: const Duration(milliseconds: 400),
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => CreateEventScreen(
+          isDarkMode: widget.isDarkMode,
+          onThemeChanged: widget.onThemeChanged,
         ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Invalid email or password. Please try again.'),
-          backgroundColor: Colors.redAccent,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-      );
-    }
+        transitionsBuilder: (context, animation, secondaryAnimation, child) => FadeTransition(opacity: animation, child: child),
+        transitionDuration: const Duration(milliseconds: 400),
+      ),
+    );
   }
 
   @override
