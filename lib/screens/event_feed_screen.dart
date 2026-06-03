@@ -826,7 +826,7 @@ class _EventCardState extends State<_EventCard> with SingleTickerProviderStateMi
                                 : (isVolunteer ? 'Volunteer Now' : 'Register Now'),
                             maxLines: 1,
                             style: const TextStyle(
-                              fontSize: 14,
+                              fontSize: 16,
                               height: 1.2,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
