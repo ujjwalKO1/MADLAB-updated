@@ -7,17 +7,21 @@ import 'screens/onboarding_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  await Firebase.initializeApp(
-    options: const FirebaseOptions(
-      apiKey: "AIzaSyDvryC5MQYPePdc_JnCoBaeGd_hkUvoP2E",
-      authDomain: "evntnxt-e715a.firebaseapp.com",
-      projectId: "evntnxt-a715a",
-      storageBucket: "evntnxt-e715a.firebasestorage.app",
-      messagingSenderId: "978311481913",
-      appId: "1:978311481913:web:54cca57ccdd65d46511be8",
-      measurementId: "G-Q5GZ5TDQVK",
-    ),
-  );
+  try {
+    await Firebase.initializeApp(
+      options: const FirebaseOptions(
+        apiKey: "AIzaSyDvryC5MQYPePdc_JnCoBaeGd_hkUvoP2E",
+        authDomain: "evntnxt-e715a.firebaseapp.com",
+        projectId: "evntnxt-a715a",
+        storageBucket: "evntnxt-e715a.firebasestorage.app",
+        messagingSenderId: "978311481913",
+        appId: "1:978311481913:web:54cca57ccdd65d46511be8",
+        measurementId: "G-Q5GZ5TDQVK",
+      ),
+    );
+  } catch (e) {
+    debugPrint("Firebase initialization failed: $e");
+  }
 
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
