@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/event_model.dart';
 
 class EventProvider extends ChangeNotifier {
@@ -10,45 +11,48 @@ class EventProvider extends ChangeNotifier {
   }
 
   EventProvider._internal() {
-    // Pre-populate with one registered event for high-fidelity presentation
-    _registeredEventIds.add('1');
+    // Sync events in real-time from Cloud Firestore
+    FirebaseFirestore.instance.collection('events')
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .listen((snapshot) {
+      if (snapshot.docs.isEmpty) {
+        // Seed default events if database is empty to keep presentation high-fidelity
+        _seedDefaultEvents();
+        return;
+      }
+      
+      _events.clear();
+      for (var doc in snapshot.docs) {
+        final data = doc.data();
+        _events.add(EventModel(
+          id: doc.id,
+          name: data['name'] ?? '',
+          clubName: data['clubName'] ?? '',
+          applicationType: data['applicationType'] ?? 'Registration',
+          formLink: data['formLink'] ?? '',
+          imagePath: data['imagePath'] ?? 'assets/images/event_hackathon.png',
+          createdAt: data['createdAt'] != null
+              ? (data['createdAt'] as Timestamp).toDate()
+              : DateTime.now(),
+        ));
+      }
+      notifyListeners();
+    });
+
+    // Sync registrations/tickets in real-time from Firestore
+    FirebaseFirestore.instance.collection('registrations')
+        .snapshots()
+        .listen((snapshot) {
+      _registeredEventIds.clear();
+      for (var doc in snapshot.docs) {
+        _registeredEventIds.add(doc.id);
+      }
+      notifyListeners();
+    });
   }
 
-  final List<EventModel> _events = [
-    EventModel(
-      id: '1',
-      name: 'HackFusion 2026',
-      clubName: 'Tech Club',
-      applicationType: 'Registration',
-      formLink: 'https://forms.google.com/hackfusion',
-      imagePath: 'assets/images/event_hackathon.png',
-    ),
-    EventModel(
-      id: '2',
-      name: 'Rhythm & Beats Fest',
-      clubName: 'Music Society',
-      applicationType: 'Registration',
-      formLink: 'https://forms.google.com/musicfest',
-      imagePath: 'assets/images/event_music.png',
-    ),
-    EventModel(
-      id: '3',
-      name: 'Campus Marathon 5K',
-      clubName: 'Sports Club',
-      applicationType: 'Volunteering',
-      formLink: 'https://forms.google.com/marathon',
-      imagePath: 'assets/images/event_sports.png',
-    ),
-    EventModel(
-      id: '4',
-      name: 'Creative Canvas Workshop',
-      clubName: 'Art Circle',
-      applicationType: 'Volunteering',
-      formLink: 'https://forms.google.com/artworkshop',
-      imagePath: 'assets/images/event_art.png',
-    ),
-  ];
-
+  final List<EventModel> _events = [];
   final Set<String> _registeredEventIds = {};
 
   List<EventModel> get events => List.unmodifiable(_events);
@@ -60,21 +64,33 @@ class EventProvider extends ChangeNotifier {
 
   void registerForEvent(String eventId) {
     if (!_registeredEventIds.contains(eventId)) {
-      _registeredEventIds.add(eventId);
-      notifyListeners();
+      FirebaseFirestore.instance.collection('registrations').doc(eventId).set({
+        'registeredAt': FieldValue.serverTimestamp(),
+      }).catchError((error) {
+        debugPrint("Error writing registration to Firestore: $error");
+      });
     }
   }
 
   void unregisterFromEvent(String eventId) {
     if (_registeredEventIds.contains(eventId)) {
-      _registeredEventIds.remove(eventId);
-      notifyListeners();
+      FirebaseFirestore.instance.collection('registrations').doc(eventId).delete().catchError((error) {
+        debugPrint("Error deleting registration from Firestore: $error");
+      });
     }
   }
 
   void addEvent(EventModel event) {
-    _events.insert(0, event);
-    notifyListeners();
+    FirebaseFirestore.instance.collection('events').doc(event.id).set({
+      'name': event.name,
+      'clubName': event.clubName,
+      'applicationType': event.applicationType,
+      'formLink': event.formLink,
+      'imagePath': event.imagePath,
+      'createdAt': FieldValue.serverTimestamp(),
+    }).catchError((error) {
+      debugPrint("Error adding event to Firestore: $error");
+    });
   }
 
   List<EventModel> searchEvents(String query) {
@@ -98,4 +114,52 @@ class EventProvider extends ChangeNotifier {
 
   List<String> get clubNames =>
       _events.map((e) => e.clubName).toSet().toList()..sort();
+
+  void _seedDefaultEvents() {
+    final defaults = [
+      EventModel(
+        id: '1',
+        name: 'HackFusion 2026',
+        clubName: 'Tech Club',
+        applicationType: 'Registration',
+        formLink: 'https://forms.google.com/hackfusion',
+        imagePath: 'assets/images/event_hackathon.png',
+      ),
+      EventModel(
+        id: '2',
+        name: 'Rhythm & Beats Fest',
+        clubName: 'Music Society',
+        applicationType: 'Registration',
+        formLink: 'https://forms.google.com/musicfest',
+        imagePath: 'assets/images/event_music.png',
+      ),
+      EventModel(
+        id: '3',
+        name: 'Campus Marathon 5K',
+        clubName: 'Sports Club',
+        applicationType: 'Volunteering',
+        formLink: 'https://forms.google.com/marathon',
+        imagePath: 'assets/images/event_sports.png',
+      ),
+      EventModel(
+        id: '4',
+        name: 'Creative Canvas Workshop',
+        clubName: 'Art Circle',
+        applicationType: 'Volunteering',
+        formLink: 'https://forms.google.com/artworkshop',
+        imagePath: 'assets/images/event_art.png',
+      ),
+    ];
+    
+    for (var e in defaults) {
+      FirebaseFirestore.instance.collection('events').doc(e.id).set({
+        'name': e.name,
+        'clubName': e.clubName,
+        'applicationType': e.applicationType,
+        'formLink': e.formLink,
+        'imagePath': e.imagePath,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    }
+  }
 }
